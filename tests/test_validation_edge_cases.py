@@ -82,3 +82,4 @@ def test_business_validator_special_characters():
         data = {"customer_id": key, "product_id": "PROD_VALID", "transaction_id": "TXN_VALID"}
         is_valid, reason, code = BusinessValidator.validate_reference_keys(data)
         assert is_valid is False
+

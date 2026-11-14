@@ -13,14 +13,15 @@ router = APIRouter(prefix="/metrics", tags=["Metrics"])
 
 @router.get("/daily", response_model=List[DailyMetricResponse])
 def get_daily_metrics(
-    start_date: Optional[date] = Query(None, description="Start date (YYYY-MM-DD)"),
-    end_date: Optional[date] = Query(None, description="End date (YYYY-MM-DD)"),
-    dimension: str = Query("TOTAL", description="Dimension type (TOTAL, PRODUCT, CUSTOMER)"),
-    limit: int = Query(100, ge=1, le=500),
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    dimension: str = "TOTAL",
+    limit: int = 100,
     db: Session = Depends(get_db)
 ):
     """Retrieve daily aggregate business metrics."""
-    query = db.query(DailyMetric).filter(DailyMetric.dimension_type == dimension.upper())
+    dim_str = dimension if isinstance(dimension, str) else "TOTAL"
+    query = db.query(DailyMetric).filter(DailyMetric.dimension_type == dim_str.upper())
     if start_date:
         query = query.filter(DailyMetric.metric_date >= start_date)
     if end_date:
@@ -30,8 +31,8 @@ def get_daily_metrics(
 
 @router.get("/profiles", response_model=List[DataQualityProfileResponse])
 def get_quality_profiles(
-    run_id: Optional[str] = Query(None, description="Filter by run ID"),
-    limit: int = Query(50, ge=1, le=200),
+    run_id: Optional[str] = None,
+    limit: int = 50,
     db: Session = Depends(get_db)
 ):
     """Retrieve batch data quality profiles."""

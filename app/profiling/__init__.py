@@ -2,7 +2,7 @@
 from app.profiling.metrics import ProfilingMetrics, DailyMetricsService
 from app.profiling.distribution import DistributionAnalyzer, DistributionCalculator
 from app.profiling.baseline import BaselineManager
-from app.profiling.profiler import Profiler, BatchProfiler
+from app.profiling.profiler import Profiler, BatchProfiler, ColumnProfiler
 
 __all__ = [
     "ProfilingMetrics",
@@ -12,4 +12,5 @@ __all__ = [
     "BaselineManager",
     "Profiler",
     "BatchProfiler",
+    "ColumnProfiler",
 ]

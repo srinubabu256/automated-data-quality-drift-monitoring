@@ -1,16 +1,17 @@
 {
-  "timestamp": "2026-11-14T09:28:12.700558+00:00",
+  "timestamp": "2026-11-14T10:10:10.471152+00:00",
   "seed": 42,
   "tiers": [
     1000,
-    10000
+    10000,
+    100000
   ],
   "benchmark_results": [
     {
       "record_count": 1000,
-      "total_duration_sec": 2.9591,
-      "throughput_records_per_sec": 337.94,
-      "peak_memory_mb": 12.3,
+      "total_duration_sec": 2.4518,
+      "throughput_records_per_sec": 407.87,
+      "peak_memory_mb": 8.34,
       "accepted_count": 912,
       "rejected_count": 64,
       "duplicate_count": 24,
@@ -20,13 +21,25 @@
     },
     {
       "record_count": 10000,
-      "total_duration_sec": 35.7733,
-      "throughput_records_per_sec": 279.54,
-      "peak_memory_mb": 78.56,
+      "total_duration_sec": 17.5364,
+      "throughput_records_per_sec": 570.24,
+      "peak_memory_mb": 78.09,
       "accepted_count": 9099,
       "rejected_count": 593,
       "duplicate_count": 308,
       "processed_count": 8595,
+      "affected_dates_count": 9,
+      "reconciliation_passed": true
+    },
+    {
+      "record_count": 100000,
+      "total_duration_sec": 241.0051,
+      "throughput_records_per_sec": 414.93,
+      "peak_memory_mb": 767.97,
+      "accepted_count": 90986,
+      "rejected_count": 6170,
+      "duplicate_count": 2844,
+      "processed_count": 84876,
       "affected_dates_count": 9,
       "reconciliation_passed": true
     }
