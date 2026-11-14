@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-14T11:37:10.875774+00:00",
+  "timestamp": "2026-11-14T12:09:59.044425+00:00",
   "seed": 42,
   "tiers": [
     1000,
@@ -9,8 +9,8 @@
   "benchmark_results": [
     {
       "record_count": 1000,
-      "total_duration_sec": 4.2179,
-      "throughput_records_per_sec": 237.08,
+      "total_duration_sec": 2.2598,
+      "throughput_records_per_sec": 442.52,
       "peak_memory_mb": 8.21,
       "accepted_count": 912,
       "rejected_count": 64,
@@ -21,8 +21,8 @@
     },
     {
       "record_count": 10000,
-      "total_duration_sec": 42.4392,
-      "throughput_records_per_sec": 235.63,
+      "total_duration_sec": 21.9814,
+      "throughput_records_per_sec": 454.93,
       "peak_memory_mb": 78.09,
       "accepted_count": 9099,
       "rejected_count": 593,
@@ -33,8 +33,8 @@
     },
     {
       "record_count": 100000,
-      "total_duration_sec": 273.3935,
-      "throughput_records_per_sec": 365.77,
+      "total_duration_sec": 254.3638,
+      "throughput_records_per_sec": 393.14,
       "peak_memory_mb": 767.97,
       "accepted_count": 90986,
       "rejected_count": 6170,

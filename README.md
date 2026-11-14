@@ -1,5 +1,5 @@
 # Automated Data Quality Profiling & Drift Monitoring Platform
-## GitHub Repository: `automated-data-quality-drift-monitoring`
+## GitHub Repository: [`srinubabu256/automated-data-quality-drift-monitoring`](https://github.com/srinubabu256/automated-data-quality-drift-monitoring)
 ### YottaFlex AI – Data Forward Deployed Engineer Hackathon Solution
 
 ![Python 3.11](https://img.shields.io/badge/Python-3.11%2B-blue.svg)
@@ -301,8 +301,10 @@ The relational schema implements 10 tables:
 Ensure Python 3.11 or later and Git are installed. Open **Windows PowerShell**:
 
 ```powershell
-# Navigate to challenge workspace
-cd C:\CandidateWorkspace\YottaFlex_Data_Engineering_Challenge
+# Clone repository
+git clone https://github.com/srinubabu256/automated-data-quality-drift-monitoring.git
+cd automated-data-quality-drift-monitoring
+# (Or navigate to local workspace: cd C:\CandidateWorkspace\YottaFlex_Data_Engineering_Challenge)
 ```
 
 ---

@@ -43,3 +43,4 @@ To balance zero-dependency local operability with enterprise design patterns, th
 3. **Automated Baseline Promotion**: Add approval workflows with webhooks allowing data stewards to promote approved batch profiles to production baselines with one click.
 4. **Interactive Schema Evolution**: Provide automated migration generators for backward-compatible schema changes (e.g., adding nullable columns).
 5. **OpenTelemetry & Prometheus Exporter**: Expose a Prometheus `/metrics` scrape endpoint for pipeline duration, PSI drift values, and quarantine counts.
+
