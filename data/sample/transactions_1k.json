@@ -1,0 +1,13 @@
+{
+  "total_records": 1000,
+  "normal_new": 766,
+  "updates": 88,
+  "reversals": 42,
+  "duplicates": 24,
+  "missing_fields": 23,
+  "malformed_timestamps": 11,
+  "invalid_amounts": 21,
+  "invalid_references": 9,
+  "late_arriving": 16,
+  "out_of_order": 0
+}

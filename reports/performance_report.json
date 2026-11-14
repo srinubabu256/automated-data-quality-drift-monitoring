@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-11-14T09:19:36.618456+00:00",
+  "seed": 42,
+  "tiers": [
+    1000,
+    10000,
+    100000
+  ],
+  "benchmark_results": [
+    {
+      "record_count": 1000,
+      "total_duration_sec": 2.9018,
+      "throughput_records_per_sec": 344.62,
+      "peak_memory_mb": 12.3,
+      "accepted_count": 912,
+      "rejected_count": 64,
+      "duplicate_count": 24,
+      "processed_count": 909,
+      "affected_dates_count": 9,
+      "reconciliation_passed": true
+    },
+    {
+      "record_count": 10000,
+      "total_duration_sec": 27.2614,
+      "throughput_records_per_sec": 366.82,
+      "peak_memory_mb": 78.56,
+      "accepted_count": 9099,
+      "rejected_count": 593,
+      "duplicate_count": 308,
+      "processed_count": 8595,
+      "affected_dates_count": 9,
+      "reconciliation_passed": true
+    },
+    {
+      "record_count": 100000,
+      "total_duration_sec": 273.6341,
+      "throughput_records_per_sec": 365.45,
+      "peak_memory_mb": 772.55,
+      "accepted_count": 90986,
+      "rejected_count": 6170,
+      "duplicate_count": 2844,
+      "processed_count": 84876,
+      "affected_dates_count": 9,
+      "reconciliation_passed": true
+    }
+  ]
+}
