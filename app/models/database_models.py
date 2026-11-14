@@ -144,6 +144,7 @@ class BaselineProfile(Base):
     median_amount = Column(Float, nullable=False, default=140.0)
     p95_amount = Column(Float, nullable=False, default=300.0)
     event_freshness_sec = Column(Float, nullable=False, default=3600.0)
+    column_baselines = Column(Text, nullable=True)  # JSON-encoded column-level baselines
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
@@ -199,12 +200,19 @@ class DataQualityAlert(Base):
 
     alert_id = Column(String(64), primary_key=True)
     run_id = Column(String(64), ForeignKey("processing_runs.run_id", ondelete="CASCADE"), nullable=False, index=True)
+    dataset_name = Column(String(128), nullable=True, default="transactions")
+    column_name = Column(String(64), nullable=True, index=True)
+    drift_type = Column(String(64), nullable=True, index=True)
     metric_name = Column(String(64), nullable=False)
+    detection_method = Column(String(64), nullable=True)
     baseline_value = Column(Float, nullable=False)
     current_value = Column(Float, nullable=False)
     difference = Column(Float, nullable=False)
     pct_change = Column(Float, nullable=False)
-    severity = Column(String(32), nullable=False)  # INFO, WARNING, CRITICAL
+    statistical_statistic = Column(Float, nullable=True)
+    p_value = Column(Float, nullable=True)
+    configured_threshold = Column(Float, nullable=True)
+    severity = Column(String(32), nullable=False)  # LOW, MEDIUM, WARNING, HIGH, CRITICAL
     explanation = Column(Text, nullable=False)
     suggested_action = Column(Text, nullable=False)
     is_resolved = Column(Boolean, nullable=False, default=False)
@@ -215,6 +223,31 @@ class DataQualityAlert(Base):
     __table_args__ = (
         UniqueConstraint("run_id", "metric_name", name="uq_run_metric_alert"),
     )
+
+
+class DriftAnalysisResult(Base):
+    __tablename__ = "drift_analysis_results"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    run_id = Column(String(64), ForeignKey("processing_runs.run_id", ondelete="CASCADE"), nullable=False, index=True)
+    baseline_version = Column(String(32), nullable=False)
+    drift_type = Column(String(64), nullable=False, index=True)
+    column_name = Column(String(64), nullable=True, index=True)
+    detection_method = Column(String(64), nullable=False)
+    baseline_value = Column(Float, nullable=True)
+    current_value = Column(Float, nullable=True)
+    absolute_difference = Column(Float, nullable=True)
+    percentage_difference = Column(Float, nullable=True)
+    statistical_statistic = Column(Float, nullable=True)
+    p_value = Column(Float, nullable=True)
+    degrees_of_freedom = Column(Integer, nullable=True)
+    drift_detected = Column(Boolean, nullable=False, default=False)
+    severity = Column(String(32), nullable=False, default="NONE")
+    threshold = Column(Float, nullable=True)
+    details = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    processing_run = relationship("ProcessingRun", backref="drift_analysis_results")
 
 
 class RejectedRecord(Base):

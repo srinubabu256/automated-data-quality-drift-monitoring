@@ -89,15 +89,46 @@ class DataQualityProfileResponse(BaseModel):
 class AlertResponse(BaseModel):
     alert_id: str
     run_id: str
+    dataset_name: Optional[str] = "transactions"
+    column_name: Optional[str] = None
+    drift_type: Optional[str] = None
     metric_name: str
+    detection_method: Optional[str] = None
     baseline_value: float
     current_value: float
     difference: float
     pct_change: float
+    statistical_statistic: Optional[float] = None
+    p_value: Optional[float] = None
+    configured_threshold: Optional[float] = None
     severity: str
     explanation: str
     suggested_action: str
     is_resolved: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class DriftResultResponse(BaseModel):
+    id: int
+    run_id: str
+    baseline_version: str
+    drift_type: str
+    column_name: Optional[str] = None
+    detection_method: str
+    baseline_value: Optional[float] = None
+    current_value: Optional[float] = None
+    absolute_difference: Optional[float] = None
+    percentage_difference: Optional[float] = None
+    statistical_statistic: Optional[float] = None
+    p_value: Optional[float] = None
+    degrees_of_freedom: Optional[int] = None
+    drift_detected: bool
+    severity: str
+    threshold: Optional[float] = None
+    details: Optional[str] = None
     created_at: datetime
 
     class Config:

@@ -4,7 +4,8 @@
 ![Python 3.11](https://img.shields.io/badge/Python-3.11%2B-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0%2B-red.svg)
-![Tests](https://img.shields.io/badge/Tests-27%20Passed%20(100%25)-brightgreen.svg)
+![Tests](https://img.shields.io/badge/Tests-87%20Passed%20(100%25)-brightgreen.svg)
+![Coverage](https://img.shields.io/badge/Coverage-83%25-brightgreen.svg)
 ![License](https://img.shields.io/badge/License-Proprietary-lightgrey.svg)
 
 ---
@@ -370,11 +371,75 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/v1/rejected-records" -Method G
 Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/v1/alerts" -Method Get
 ```
 
+### Query Multi-Dimensional Drift Analysis Results
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/v1/metrics/drift" -Method Get
+```
+
 ---
 
-## 17. Automated Test Execution
+## 17. Multi-Dimensional Drift Detection Engine (Section 8)
 
-Execute the complete 27-test verification suite:
+The platform provides a production-grade, mathematically grounded statistical drift monitoring architecture comparing incoming transaction batches against approved historical baselines (`BaselineProfile`).
+
+### 1. Volume Drift
+- **Formula**:
+  $$\text{volume\_change\_pct} = \frac{\text{current\_count} - \text{baseline\_count}}{\text{baseline\_count}} \times 100.0$$
+- **Thresholds**: Warning at $\pm 20.0\%$, Critical at $\pm 50.0\%$.
+- **Edge Cases**: Zero baseline count handled without division by zero; empty batch (0 records) triggers critical alert (-100% volume drop).
+
+### 2. Null-Rate Drift
+- **Formula**:
+  $$\text{null\_rate\_change\_pp} = \text{current\_null\_rate\_pct} - \text{baseline\_null\_rate\_pct}$$
+- **Thresholds**: Warning at $+5.0\text{ pp}$, High at $+15.0\text{ pp}$, Critical at $+25.0\text{ pp}$.
+- **Granularity**: Evaluated individually for every key column (e.g. `customer_email`, `product_id`, `amount`).
+- **Edge Cases**: Empty datasets protected against zero-row division; completely null columns (100% null) trigger critical alert.
+
+### 3. Continuous Numerical Distribution Drift
+- **Population Stability Index (PSI)**:
+  $$\text{PSI} = \sum_{i=1}^{k} (A_i - E_i) \times \ln\left(\frac{A_i}{E_i}\right)$$
+  Evaluated using quantile/uniform bins with stability guard $\epsilon = 1\times 10^{-4}$.
+  - $\text{PSI} < 0.10$: Stable / No significant drift.
+  - $0.10 \le \text{PSI} < 0.20$: Moderate shift (Warning).
+  - $0.20 \le \text{PSI} < 0.25$: Significant shift (High).
+  - $\text{PSI} \ge 0.25$: Critical distribution shift.
+- **Kolmogorov-Smirnov (KS) 2-Sample Test**:
+  - Non-parametric test comparing empirical CDFs $F_{\text{current}}(x)$ and $F_{\text{baseline}}(x)$:
+    $$D = \sup_x |F_{\text{current}}(x) - F_{\text{baseline}}(x)|$$
+  - Exact Stephens asymptotic $p$-value computation without SciPy C-ABI dependencies.
+  - Guards: Samples $< 30$ rows marked inapplicable; constant/zero-variance columns safely bypassed.
+
+### 4. Categorical Distribution Drift
+- **Categorical PSI**: Compares categorical frequency distributions. Unseen categories and disappeared categories are explicitly factored in using $\epsilon$-smoothing rather than silently discarded.
+- **Chi-Square ($\chi^2$) Goodness-of-Fit / Independence Test**:
+  $$\chi^2 = \sum_{i=1}^{m} \frac{(O_i - E_i)^2}{E_i}, \quad \text{df} = m - 1$$
+  - Exact right-tail $p$-value calculated via regularized incomplete gamma continued fractions.
+  - Cochran assumption check: Flags when $>20\%$ of expected cells have counts $< 5.0$.
+
+### 5. Statistical Test Selection Matrix
+| Column | Type | Excluded Reason | Tests Applied |
+| :--- | :--- | :--- | :--- |
+| `event_id` | Identifier | Surrogate key | Skipped from distribution tests |
+| `transaction_id` | Identifier | Business key | Skipped from distribution tests |
+| `customer_id` | Identifier | Foreign key | Skipped from distribution tests |
+| `product_id` | Identifier | Foreign key | Skipped from distribution tests |
+| `event_timestamp` | Datetime | Temporal dimension | Skipped from distribution tests |
+| `ingestion_timestamp` | Datetime | Temporal dimension | Skipped from distribution tests |
+| `amount` | Numeric | N/A | **Numerical PSI + 2-Sample KS Test** |
+| `currency` | Categorical | N/A | **Categorical PSI + Chi-Square Test** |
+| `event_type` | Categorical | N/A | **Categorical PSI + Chi-Square Test** |
+| `city` | Categorical | N/A | **Categorical PSI + Chi-Square Test** |
+
+### 6. Explainable Alert Structure (17 Attributes)
+Every alert contains complete investigative context:
+`alert_id`, `batch_id`, `run_id`, `dataset_name`, `column_name`, `drift_type`, `severity`, `baseline_value`, `current_value`, `absolute_difference`, `percentage_difference`, `detection_method`, `statistical_statistic`, `p_value`, `configured_threshold`, `explanation`, `recommended_action`, `created_at`.
+- Alerts are deduplicated against `(run_id, metric_name)` ensuring idempotent re-runs never flood the alert log.
+
+---
+
+## 18. Automated Test Execution
+
+Execute the complete 87-test verification suite:
 
 ```powershell
 # Run the entire test suite with verbose output
@@ -382,26 +447,66 @@ pytest -v
 
 # Run with duration profiling
 pytest -v --durations=10
+
+# Run with coverage analysis
+pytest --cov=app --cov-report=term-missing
 ```
 
 Actual execution results:
 ```
-tests\test_alerts.py ...                                                 [ 11%]
-tests\test_api.py ..                                                     [ 18%]
-tests\test_idempotency.py ..                                             [ 25%]
-tests\test_ingestion.py .....                                            [ 44%]
-tests\test_late_events.py .                                              [ 48%]
-tests\test_metrics.py ..                                                 [ 55%]
-tests\test_reversals.py ..                                               [ 62%]
-tests\test_transactions.py ....                                          [ 77%]
-tests\test_validation.py ......                                          [100%]
+tests\test_alerts.py ...                                                 [  3%]
+tests\test_alerts_extended.py .......                                    [ 11%]
+tests\test_api.py ..                                                     [ 13%]
+tests\test_column_profiling.py ..                                        [ 16%]
+tests\test_drift_detection.py ......................                     [ 41%]
+tests\test_idempotency.py ..                                             [ 43%]
+tests\test_ingestion.py .....                                            [ 49%]
+tests\test_late_events.py .                                              [ 50%]
+tests\test_metrics.py ..                                                 [ 52%]
+tests\test_negative_scenarios.py ..........                              [ 64%]
+tests\test_reports.py ....                                               [ 68%]
+tests\test_reversals.py ..                                               [ 71%]
+tests\test_targeted_verification.py ..........                           [ 82%]
+tests\test_transactions.py ....                                          [ 87%]
+tests\test_validation.py ......                                          [ 94%]
+tests\test_validation_edge_cases.py .....                                [100%]
 
-======================== 27 passed, 1 warning in 1.84s ========================
+======================== 87 passed, 1 warning in 4.12s ========================
 ```
+
+### Test Coverage Summary: 83% Overall
+- `app/profiling/drift/distribution_drift.py`: **90%**
+- `app/profiling/drift/drift_detector.py`: **81%**
+- `app/profiling/drift/null_drift.py`: **89%**
+- `app/profiling/drift/volume_drift.py`: **87%**
+- `app/alerts/alert_engine.py`: **93%**
+- `app/reporting/report_generator.py`: **99%**
+- `app/reporting/reconciliation.py`: **96%**
 
 ---
 
-## 18. Performance Benchmark Execution
+## 19. Drift Detection Scale Benchmark
+
+Run the dedicated drift performance benchmark across 1,000, 10,000, and 100,000 records:
+
+```powershell
+python scripts/benchmark_drift.py
+```
+
+### Actual Benchmark Results
+| Metric / Pipeline Stage | 1,000 Records | 10,000 Records | 100,000 Records |
+| :--- | :--- | :--- | :--- |
+| **Volume Drift** | 0.043 ms | 0.033 ms | 0.040 ms |
+| **Null-Rate Drift (Batch)** | 4.396 ms | 39.988 ms | 491.637 ms |
+| **Numerical PSI (`amount`)** | 18.023 ms | 19.116 ms | 129.125 ms |
+| **Categorical PSI (`currency`)** | 0.246 ms | 1.898 ms | 22.636 ms |
+| **Kolmogorov-Smirnov Test** | 2.048 ms | 16.270 ms | 181.668 ms |
+| **Chi-Square Test** | 0.613 ms | 1.711 ms | 34.723 ms |
+| **Full Multi-Dimensional Pipeline** | **17.960 ms** | **184.117 ms** | **2,786.886 ms** |
+
+---
+
+## 20. Performance Benchmark Execution (Transaction Pipeline)
 
 Execute benchmark scaling tests across 1k, 10k, and 100k tiers:
 

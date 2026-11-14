@@ -26,6 +26,20 @@ class Settings(BaseSettings):
     ALERT_REJECTION_RATE_MAX_PCT: float = 5.0   # Rejection rate > 5% triggers warning
     ALERT_FRESHNESS_MAX_SEC: float = 86400.0    # Freshness latency > 24 hours triggers alert
 
+    # Drift Detection Thresholds (Configurable)
+    DRIFT_VOLUME_WARNING_PCT: float = 20.0       # Volume drop/spike >= 20%
+    DRIFT_VOLUME_CRITICAL_PCT: float = 50.0      # Volume drop/spike >= 50%
+    DRIFT_NULL_RATE_WARNING_PP: float = 5.0      # Column null rate shift >= 5 percentage points
+    DRIFT_NULL_RATE_HIGH_PP: float = 15.0        # Column null rate shift >= 15 percentage points
+    DRIFT_NULL_RATE_CRITICAL_PP: float = 25.0    # Column null rate shift >= 25 percentage points
+    DRIFT_PSI_MODERATE: float = 0.10             # PSI >= 0.10 implies moderate drift
+    DRIFT_PSI_SIGNIFICANT: float = 0.20          # PSI >= 0.20 implies significant drift
+    DRIFT_PSI_CRITICAL: float = 0.25             # PSI >= 0.25 implies critical drift
+    DRIFT_KS_PVALUE_THRESHOLD: float = 0.05      # Significance level for 2-sample KS test
+    DRIFT_CHISQUARE_PVALUE_THRESHOLD: float = 0.05 # Significance level for Chi-Square test
+    DRIFT_MIN_SAMPLE_SIZE: int = 30              # Minimum sample size required for continuous distribution tests
+    DRIFT_CHISQUARE_MIN_EXPECTED_COUNT: float = 5.0 # Cochran condition for Chi-Square expected frequencies
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

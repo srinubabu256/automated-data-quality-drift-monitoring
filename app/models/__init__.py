@@ -1,5 +1,5 @@
 """Data models and enums package."""
-from app.models.enums import EventType, RecordStatus, BatchStatus, AlertSeverity
+from app.models.enums import EventType, RecordStatus, BatchStatus, AlertSeverity, DriftType, DetectionMethod
 from app.models.database_models import (
     DataSource,
     ProcessingRun,
@@ -10,6 +10,7 @@ from app.models.database_models import (
     BaselineProfile,
     DataQualityProfile,
     DataQualityAlert,
+    DriftAnalysisResult,
     RejectedRecord,
     ProcessingError,
 )
@@ -19,6 +20,8 @@ __all__ = [
     "RecordStatus",
     "BatchStatus",
     "AlertSeverity",
+    "DriftType",
+    "DetectionMethod",
     "DataSource",
     "ProcessingRun",
     "RawEvent",
@@ -28,6 +31,7 @@ __all__ = [
     "BaselineProfile",
     "DataQualityProfile",
     "DataQualityAlert",
+    "DriftAnalysisResult",
     "RejectedRecord",
     "ProcessingError",
 ]

@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.database_models import DailyMetric, DataQualityProfile
-from app.api.schemas import DailyMetricResponse, DataQualityProfileResponse
+from app.models.database_models import DailyMetric, DataQualityProfile, DriftAnalysisResult
+from app.api.schemas import DailyMetricResponse, DataQualityProfileResponse, DriftResultResponse
 
 router = APIRouter(prefix="/metrics", tags=["Metrics"])
 
@@ -40,4 +40,23 @@ def get_quality_profiles(
     if run_id:
         query = query.filter(DataQualityProfile.run_id == run_id)
     return query.order_by(DataQualityProfile.created_at.desc()).limit(limit).all()
+
+
+@router.get("/drift", response_model=List[DriftResultResponse])
+def get_drift_results(
+    run_id: Optional[str] = None,
+    drift_type: Optional[str] = None,
+    drift_detected: Optional[bool] = None,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """Retrieve drift analysis results across batches and columns."""
+    query = db.query(DriftAnalysisResult)
+    if run_id:
+        query = query.filter(DriftAnalysisResult.run_id == run_id)
+    if drift_type:
+        query = query.filter(DriftAnalysisResult.drift_type == drift_type.upper())
+    if drift_detected is not None:
+        query = query.filter(DriftAnalysisResult.drift_detected == drift_detected)
+    return query.order_by(DriftAnalysisResult.id.desc()).limit(limit).all()
 

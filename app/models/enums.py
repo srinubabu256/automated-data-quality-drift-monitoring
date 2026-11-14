@@ -26,8 +26,27 @@ class BatchStatus(str, Enum):
 
 class AlertSeverity(str, Enum):
     INFO = "INFO"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
     WARNING = "WARNING"
+    HIGH = "HIGH"
     CRITICAL = "CRITICAL"
+
+
+class DriftType(str, Enum):
+    VOLUME = "VOLUME"
+    NULL_RATE = "NULL_RATE"
+    DISTRIBUTION_PSI = "DISTRIBUTION_PSI"
+    DISTRIBUTION_KS = "DISTRIBUTION_KS"
+    DISTRIBUTION_CHISQUARE = "DISTRIBUTION_CHISQUARE"
+
+
+class DetectionMethod(str, Enum):
+    PERCENTAGE_CHANGE = "PERCENTAGE_CHANGE"
+    PERCENTAGE_POINT_SHIFT = "PERCENTAGE_POINT_SHIFT"
+    PSI = "PSI"
+    KOLMOGOROV_SMIRNOV = "KOLMOGOROV_SMIRNOV"
+    CHI_SQUARE = "CHI_SQUARE"
 
 
 class DimensionType(str, Enum):

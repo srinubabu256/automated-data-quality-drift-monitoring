@@ -1,7 +1,8 @@
 """Baseline Profile Manager for tracking, versioning, and comparing system baselines."""
+import json
 import logging
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from sqlalchemy.orm import Session
 
 from app.models.database_models import BaselineProfile
@@ -36,6 +37,7 @@ class BaselineManager:
         version: str,
         baseline_name: str,
         metrics: Dict[str, float],
+        column_baselines: Optional[Union[Dict[str, Any], str]] = None,
         is_active: bool = True
     ) -> BaselineProfile:
         """
@@ -44,6 +46,10 @@ class BaselineManager:
         """
         profile = db.query(BaselineProfile).filter_by(version=version).first()
         now = datetime.now(timezone.utc)
+
+        col_baselines_str = None
+        if column_baselines is not None:
+            col_baselines_str = json.dumps(column_baselines) if isinstance(column_baselines, dict) else str(column_baselines)
 
         if is_active:
             # Optionally mark other baselines as inactive
@@ -62,6 +68,7 @@ class BaselineManager:
                 median_amount=float(metrics.get("median_amount", 140.0)),
                 p95_amount=float(metrics.get("p95_amount", 300.0)),
                 event_freshness_sec=float(metrics.get("event_freshness_sec", 3600.0)),
+                column_baselines=col_baselines_str,
                 is_active=is_active,
                 created_at=now,
             )
@@ -77,6 +84,8 @@ class BaselineManager:
             profile.median_amount = float(metrics.get("median_amount", profile.median_amount))
             profile.p95_amount = float(metrics.get("p95_amount", profile.p95_amount))
             profile.event_freshness_sec = float(metrics.get("event_freshness_sec", profile.event_freshness_sec))
+            if col_baselines_str is not None:
+                profile.column_baselines = col_baselines_str
             profile.is_active = is_active
 
         db.commit()
