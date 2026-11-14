@@ -18,6 +18,18 @@ from app.models.database_models import (
 from app.reporting.reconciliation import ReconciliationEngine
 
 
+def sanitize_csv_cell(val: Any) -> Any:
+    """Neutralize spreadsheet formula injection (CWE-1236) by escaping leading formula characters."""
+    if isinstance(val, str) and val and val[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return f"'{val}"
+    return val
+
+
+def sanitize_dict_for_csv(row: Dict[str, Any]) -> Dict[str, Any]:
+    """Apply formula injection defense across all dictionary values."""
+    return {k: sanitize_csv_cell(v) for k, v in row.items()}
+
+
 class ReportGenerator:
     """Produces JSON and CSV report artifacts for audits, runs, metrics, and quality."""
 
@@ -82,7 +94,7 @@ class ReportGenerator:
             with open(out_csv, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
                 writer.writeheader()
-                writer.writerows(rows)
+                writer.writerows([sanitize_dict_for_csv(r) for r in rows])
 
         return str(out_json)
 
@@ -119,7 +131,7 @@ class ReportGenerator:
             with open(out_csv, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
                 writer.writeheader()
-                writer.writerows(rows)
+                writer.writerows([sanitize_dict_for_csv(r) for r in rows])
 
         return str(out_json)
 
@@ -176,7 +188,7 @@ class ReportGenerator:
             with open(out_csv, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
                 writer.writeheader()
-                writer.writerows(rows)
+                writer.writerows([sanitize_dict_for_csv(r) for r in rows])
 
         return str(out_json)
 

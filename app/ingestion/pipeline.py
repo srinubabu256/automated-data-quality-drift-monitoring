@@ -10,7 +10,6 @@ from app.ingestion.batch_manager import BatchManager, DuplicateFileError
 from app.validation.schema_validator import SchemaValidator
 from app.validation.business_validator import BusinessValidator
 from app.validation.quarantine import QuarantineManager
-from app.processing.transaction_processor import TransactionProcessor
 from app.profiling.profiler import BatchProfiler
 from app.alerts.alert_engine import AlertEngine
 from app.reporting.reconciliation import ReconciliationEngine
@@ -214,6 +213,7 @@ class IngestionPipeline:
 
         # 7. Process Transactions (NEW, UPDATE, REVERSAL) and Recompute historical metrics
         try:
+            from app.processing.transaction_processor import TransactionProcessor
             processed_count, affected_dates = TransactionProcessor.process_batch(
                 db=db,
                 run_id=run_id,

@@ -43,19 +43,36 @@ class SchemaValidator:
         product_id = str(row["product_id"]).strip()
         event_type = str(row["event_type"]).strip().upper()
         amount_raw = str(row["amount"]).strip()
-        currency = str(row.get("currency", "USD")).strip().upper()
+        
+        # Currency check: default to USD if omitted, but if present must be 3 uppercase letters
+        if "currency" in row:
+            curr_val = row["currency"]
+            if curr_val is None or str(curr_val).strip() == "":
+                return False, "Currency field cannot be empty", "MISSING_REQUIRED_FIELD", None
+            currency = str(curr_val).strip()
+            if not re.match(r"^[A-Z]{3}$", currency):
+                return False, f"Invalid currency code '{currency}'. Must be 3 uppercase letters.", "INVALID_CURRENCY", None
+        else:
+            currency = "USD"
+        
         timestamp_raw = str(row["event_timestamp"]).strip()
         source_system = str(row.get("source_system", "UNKNOWN")).strip()
+
+        # String length boundary checks (DB column width safety)
+        if len(event_id) > 64 or len(transaction_id) > 64 or len(customer_id) > 64 or len(product_id) > 64:
+            return False, "Identifier exceeds maximum allowable field length (64 characters)", "FIELD_VALUE_TOO_LONG", None
 
         # 2. Event type check
         if event_type not in cls.VALID_EVENT_TYPES:
             return False, f"Invalid event_type '{event_type}'. Must be NEW, UPDATE, or REVERSAL", "INVALID_EVENT_TYPE", None
 
-        # 3. Numeric Amount check (must be positive decimal)
+        # 3. Numeric Amount check (must be positive decimal within bounds)
         try:
             amt = Decimal(amount_raw)
             if amt <= Decimal("0.00"):
                 return False, f"Invalid amount '{amount_raw}'. Amount must be strictly greater than 0.00", "INVALID_AMOUNT_VALUE", None
+            if amt > Decimal("999999999999.99"):
+                return False, f"Amount '{amount_raw}' exceeds maximum allowable limit of $999,999,999,999.99", "AMOUNT_EXCEEDS_MAX_LIMIT", None
             # Round to 2 decimal places
             amt = amt.quantize(Decimal("0.01"))
         except (InvalidOperation, ValueError):

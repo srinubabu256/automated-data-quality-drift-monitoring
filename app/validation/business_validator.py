@@ -17,17 +17,19 @@ class BusinessValidator:
         """
         Validates customer_id, product_id, and transaction_id format.
         """
-        cust_id = data.get("customer_id", "")
-        prod_id = data.get("product_id", "")
-        tx_id = data.get("transaction_id", "")
+        cust_id = str(data.get("customer_id", "")).strip()
+        prod_id = str(data.get("product_id", "")).strip()
+        tx_id = str(data.get("transaction_id", "")).strip()
 
-        if not IDENTIFIER_PATTERN.match(cust_id) or "UNKNOWN" in cust_id or "INV" in cust_id and "@" in cust_id:
+        disallowed_tokens = {"NULL", "NONE", "UNKNOWN"}
+
+        if not IDENTIFIER_PATTERN.match(cust_id) or any(tok in cust_id.upper() for tok in disallowed_tokens):
             return False, f"Invalid customer reference key format: '{cust_id}'", "INVALID_CUSTOMER_KEY"
 
-        if not IDENTIFIER_PATTERN.match(prod_id) or prod_id.upper() in {"NULL", "NONE"}:
+        if not IDENTIFIER_PATTERN.match(prod_id) or any(tok in prod_id.upper() for tok in disallowed_tokens):
             return False, f"Invalid product reference key format: '{prod_id}'", "INVALID_PRODUCT_KEY"
 
-        if not IDENTIFIER_PATTERN.match(tx_id):
+        if not IDENTIFIER_PATTERN.match(tx_id) or any(tok in tx_id.upper() for tok in disallowed_tokens):
             return False, f"Invalid transaction ID format: '{tx_id}'", "INVALID_TRANSACTION_KEY"
 
         return True, None, None

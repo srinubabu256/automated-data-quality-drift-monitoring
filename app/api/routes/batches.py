@@ -26,20 +26,35 @@ def upload_batch_file(
     Validates, isolates errors to quarantine, tracks transactions,
     recomputes daily metrics, and generates explainable alerts.
     """
-    if not file.filename.endswith(".csv"):
+    if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only CSV files (.csv) are accepted for batch upload."
         )
 
-    # Save uploaded file temporarily to input directory
+    # Sanitize filename against path traversal attacks
+    safe_filename = Path(file.filename).name
     input_dir = Path(settings.DATA_INPUT_DIR)
     input_dir.mkdir(parents=True, exist_ok=True)
-    temp_file_path = input_dir / f"upload_{file.filename}"
+    temp_file_path = input_dir / f"upload_{safe_filename}"
 
+    # Read and enforce max file size limit (50 MB)
+    MAX_FILE_SIZE = 50 * 1024 * 1024
+    bytes_written = 0
     try:
         with open(temp_file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+            while chunk := file.file.read(65536):
+                bytes_written += len(chunk)
+                if bytes_written > MAX_FILE_SIZE:
+                    raise HTTPException(
+                        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                        detail=f"File exceeds maximum allowable upload size of 50 MB."
+                    )
+                buffer.write(chunk)
+    except HTTPException:
+        if temp_file_path.exists():
+            temp_file_path.unlink()
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

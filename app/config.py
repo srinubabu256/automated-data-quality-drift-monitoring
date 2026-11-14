@@ -20,9 +20,11 @@ class Settings(BaseSettings):
     # Baseline & Anomaly Alerting Thresholds
     BASELINE_VERSION: str = "v1.0"
     ALERT_VOLUME_DROP_PCT: float = 30.0          # Drop in batch volume > 30% triggers alert
+    ALERT_VOLUME_SPIKE_PCT: float = 100.0        # Surge in batch volume > 100% triggers alert
     ALERT_NULL_RATE_INCREASE_PCT: float = 10.0  # Increase in null rate > 10% triggers alert
     ALERT_AMOUNT_DRIFT_PCT: float = 50.0        # Shift in mean amount > 50% triggers alert
     ALERT_REJECTION_RATE_MAX_PCT: float = 5.0   # Rejection rate > 5% triggers warning
+    ALERT_FRESHNESS_MAX_SEC: float = 86400.0    # Freshness latency > 24 hours triggers alert
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -49,12 +49,12 @@ class AlertEngine:
         now = datetime.now(timezone.utc)
         run_id = profile.run_id
 
-        # 1. Volume Drop Evaluation
+        # 1. Volume Drop / Spike Evaluation
         if baseline.record_volume > 0:
             diff_volume = profile.batch_volume - baseline.record_volume
             pct_volume_change = (diff_volume / baseline.record_volume) * 100.0
 
-            # If volume drops by more than ALERT_VOLUME_DROP_PCT
+            # Volume drop alert
             if pct_volume_change <= -abs(settings.ALERT_VOLUME_DROP_PCT):
                 explanation = (
                     f"Batch volume of {profile.batch_volume} is {abs(pct_volume_change):.1f}% lower than "
@@ -70,6 +70,33 @@ class AlertEngine:
                     db=db,
                     run_id=run_id,
                     metric_name="record_volume",
+                    baseline_val=float(baseline.record_volume),
+                    current_val=float(profile.batch_volume),
+                    diff=float(diff_volume),
+                    pct_change=round(pct_volume_change, 2),
+                    severity=severity.value,
+                    explanation=explanation,
+                    action=suggested_action,
+                    created_at=now,
+                )
+                if alert:
+                    alerts.append(alert)
+
+            # Volume spike alert
+            elif pct_volume_change >= settings.ALERT_VOLUME_SPIKE_PCT:
+                explanation = (
+                    f"Batch volume of {profile.batch_volume} surged by {pct_volume_change:.1f}% higher than "
+                    f"expected baseline volume of {baseline.record_volume} records."
+                )
+                suggested_action = (
+                    "Verify potential duplicate event flooding, marketing campaign surges, or upstream replay events."
+                )
+                severity = AlertSeverity.WARNING
+
+                alert = cls._create_or_get_alert(
+                    db=db,
+                    run_id=run_id,
+                    metric_name="record_volume_spike",
                     baseline_val=float(baseline.record_volume),
                     current_val=float(profile.batch_volume),
                     diff=float(diff_volume),
@@ -145,6 +172,33 @@ class AlertEngine:
                 )
                 if alert:
                     alerts.append(alert)
+
+        # 4. Freshness Violation Evaluation
+        if profile.event_freshness_sec > settings.ALERT_FRESHNESS_MAX_SEC:
+            freshness_diff = profile.event_freshness_sec - baseline.event_freshness_sec
+            freshness_pct = (freshness_diff / baseline.event_freshness_sec * 100.0) if baseline.event_freshness_sec > 0 else 0.0
+            explanation = (
+                f"Batch event freshness of {profile.event_freshness_sec / 3600.0:.1f} hours exceeds "
+                f"maximum allowable latency of {settings.ALERT_FRESHNESS_MAX_SEC / 3600.0:.1f} hours."
+            )
+            suggested_action = (
+                "Verify upstream data delivery schedule and investigate pipeline backlog."
+            )
+            alert = cls._create_or_get_alert(
+                db=db,
+                run_id=run_id,
+                metric_name="event_freshness",
+                baseline_val=float(baseline.event_freshness_sec),
+                current_val=float(profile.event_freshness_sec),
+                diff=round(freshness_diff, 2),
+                pct_change=round(freshness_pct, 2),
+                severity=AlertSeverity.WARNING.value,
+                explanation=explanation,
+                action=suggested_action,
+                created_at=now,
+            )
+            if alert:
+                alerts.append(alert)
 
         db.commit()
         return alerts
