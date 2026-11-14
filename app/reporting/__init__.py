@@ -1,9 +1,12 @@
-"""Reporting package."""
-from app.reporting.reconciliation import ReconciliationChecker
+"""Reporting package exporting reconciliation and report generator."""
+from app.reporting.reconciliation import ReconciliationEngine, ReconciliationError
 from app.reporting.report_generator import ReportGenerator
 
+ReconciliationReport = ReconciliationEngine
+
 __all__ = [
-    "ReconciliationChecker",
+    "ReconciliationEngine",
+    "ReconciliationReport",
+    "ReconciliationError",
     "ReportGenerator",
 ]
-

@@ -1,5 +1,5 @@
 # Performance Benchmark Report
-Generated at: `2026-11-14T10:10:10.471152+00:00`
+Generated at: `2026-11-14T11:37:10.875774+00:00`
 Environment: Python 3.11, SQLite (Local In-Process), Windows
 
 ---
@@ -8,9 +8,9 @@ Environment: Python 3.11, SQLite (Local In-Process), Windows
 
 | Scale Tier | Total Duration | Throughput (rec/s) | Peak Memory | Accepted | Rejected | Duplicates | Reconciliation |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 1,000 | 2.452s | 407.9 | 8.34 MB | 912 | 64 | 24 | PASSED |
-| 10,000 | 17.536s | 570.2 | 78.09 MB | 9,099 | 593 | 308 | PASSED |
-| 100,000 | 241.005s | 414.9 | 767.97 MB | 90,986 | 6,170 | 2,844 | PASSED |
+| 1,000 | 4.218s | 237.1 | 8.21 MB | 912 | 64 | 24 | PASSED |
+| 10,000 | 42.439s | 235.6 | 78.09 MB | 9,099 | 593 | 308 | PASSED |
+| 100,000 | 273.394s | 365.8 | 767.97 MB | 90,986 | 6,170 | 2,844 | PASSED |
 
 ---
 

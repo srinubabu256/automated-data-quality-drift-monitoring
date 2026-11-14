@@ -5,19 +5,23 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
-from app.config import settings
-from app.database import engine, init_db, SessionLocal
-from app.models.database_models import DataSource, BaselineProfile
+from app.api.routes import alerts, batches, metrics, reports
 from app.api.schemas import HealthResponse
-from app.api.routes import batches, metrics, alerts, reports
+from app.config import settings
+from app.core.logging import get_logger, setup_logging
+from app.database import Base, SessionLocal, engine, init_db
+from app.database.models import BaselineProfile
+from dashboard.app import dashboard_app
+
+setup_logging()
+logger = get_logger("main")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup and shutdown lifespan event handler."""
-    print("[DEBUG] Entering lifespan")
+    logger.info("Initializing database schema...")
     init_db(engine)
-    print("[DEBUG] init_db done")
     db = SessionLocal()
     try:
         baseline = db.query(BaselineProfile).filter_by(version=settings.BASELINE_VERSION).first()
@@ -38,11 +42,11 @@ async def lifespan(app: FastAPI):
             )
             db.add(default_baseline)
             db.commit()
+            logger.info(f"Seeded default baseline profile {settings.BASELINE_VERSION}")
     finally:
         db.close()
-    print("[DEBUG] Yielding lifespan")
     yield
-    print("[DEBUG] Exiting lifespan")
+    logger.info("Application shutdown completed.")
 
 
 app = FastAPI(
@@ -50,7 +54,8 @@ app = FastAPI(
     description="Production-grade local data engineering pipeline handling incremental transaction data, historical metric recomputation, data quality quarantine, baseline drift detection, and explainable alerts.",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # CORS Middleware
@@ -62,7 +67,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Health endpoint
+
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 def health_check():
     """System health check endpoint."""
@@ -71,8 +76,9 @@ def health_check():
         status="UP",
         environment=settings.ENVIRONMENT,
         timestamp=datetime.now(timezone.utc),
-        database=db_type
+        database=db_type,
     )
+
 
 @app.get("/", include_in_schema=False)
 def root():
@@ -85,3 +91,6 @@ app.include_router(batches.router, prefix="/api/v1")
 app.include_router(metrics.router, prefix="/api/v1")
 app.include_router(alerts.router, prefix="/api/v1")
 app.include_router(reports.router, prefix="/api/v1")
+
+# Mount Dashboard Sub-Application
+app.mount("/dashboard", dashboard_app)

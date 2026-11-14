@@ -63,6 +63,10 @@ class PipelineResult:
         }
 
 
+# Alias for backward compatibility
+PipelineExecutionResult = PipelineResult
+
+
 class IngestionPipeline:
     """Executes the full data engineering ingestion lifecycle idempotently."""
 

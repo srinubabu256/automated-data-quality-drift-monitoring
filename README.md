@@ -4,8 +4,8 @@
 ![Python 3.11](https://img.shields.io/badge/Python-3.11%2B-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0%2B-red.svg)
-![Tests](https://img.shields.io/badge/Tests-87%20Passed%20(100%25)-brightgreen.svg)
-![Coverage](https://img.shields.io/badge/Coverage-83%25-brightgreen.svg)
+![Tests](https://img.shields.io/badge/Tests-108%20Passed%20(100%25)-brightgreen.svg)
+![Coverage](https://img.shields.io/badge/Coverage-85%25-brightgreen.svg)
 ![License](https://img.shields.io/badge/License-Proprietary-lightgrey.svg)
 
 ---
@@ -93,8 +93,32 @@ YottaFlex_Data_Engineering_Challenge/
 ├── app/
 │   ├── __init__.py
 │   ├── config.py                       # Pydantic Settings & threshold configs
-│   ├── database.py                     # SQLAlchemy engine, session & init
+│   ├── database.py                     # Backward-compatible database facade
 │   ├── main.py                         # FastAPI app, lifespan & router setup
+│   │
+│   ├── core/                           # Core utilities & cross-cutting concerns
+│   │   ├── __init__.py
+│   │   ├── exceptions.py               # Domain exception hierarchy
+│   │   ├── logging.py                  # Structured application logging
+│   │   └── security.py                 # Formula injection & path sanitization
+│   │
+│   ├── database/                       # Relational storage & database layer
+│   │   ├── __init__.py
+│   │   ├── connection.py               # SQLAlchemy engine, session & init
+│   │   ├── models.py                   # Relational ORM models (11 entities)
+│   │   ├── enums.py                    # Domain event & record enums
+│   │   └── repositories/               # Repository pattern data access
+│   │       ├── batch_repository.py
+│   │       ├── metric_repository.py
+│   │       ├── alert_repository.py
+│   │       └── baseline_repository.py
+│   │
+│   ├── services/                       # Business logic application services
+│   │   ├── __init__.py
+│   │   ├── batch_service.py            # Batch processing & run queries
+│   │   ├── baseline_service.py         # Baseline management service
+│   │   ├── drift_service.py            # Statistical drift coordination
+│   │   └── report_service.py           # Report & reconciliation exports
 │   │
 │   ├── api/
 │   │   ├── __init__.py
@@ -107,14 +131,19 @@ YottaFlex_Data_Engineering_Challenge/
 │   │
 │   ├── ingestion/
 │   │   ├── __init__.py
-│   │   ├── loader.py                   # CSV loader, headers check & SHA-256
-│   │   └── batch_manager.py            # Idempotency, run lifecycle & retry
+│   │   ├── csv_reader.py               # Robust CSV parsing & SHA-256 hashing
+│   │   ├── json_reader.py              # JSON array & NDJSON stream ingestion
+│   │   ├── loader.py                   # Backward-compatible reader facade
+│   │   ├── batch_manager.py            # Idempotency, run lifecycle & retry
+│   │   └── pipeline.py                 # Orchestrated file ingestion pipeline
 │   │
 │   ├── validation/
 │   │   ├── __init__.py
 │   │   ├── schema_validator.py         # Required fields, syntax, types & timestamps
 │   │   ├── business_validator.py       # Reference keys & duplicate event_id checks
-│   │   └── quarantine.py               # Quarantine persistence & disk audit logs
+│   │   ├── quarantine.py               # Quarantine persistence & disk audit logs
+│   │   ├── schema.py                   # SchemaValidator alias
+│   │   └── rules.py                    # BusinessValidator alias
 │   │
 │   ├── processing/
 │   │   ├── __init__.py
@@ -125,24 +154,44 @@ YottaFlex_Data_Engineering_Challenge/
 │   │
 │   ├── profiling/
 │   │   ├── __init__.py
-│   │   ├── profiler.py                 # Batch statistical profiler
-│   │   ├── metrics.py                  # Descriptive stats & daily metrics service
-│   │   ├── baseline.py                 # Versioned baseline manager
-│   │   └── distribution.py             # Numeric & categorical drift analyzer
+│   │   ├── profiler.py                 # Comprehensive batch statistical profiler
+│   │   ├── baseline.py                 # Versioned baseline profile manager
+│   │   ├── numeric.py                  # Granular numeric column profiler
+│   │   ├── categorical.py              # Categorical frequency profiler
+│   │   ├── datetime.py                 # Datetime span & freshness profiler
+│   │   ├── distribution.py             # Histogram & quantile distribution calculations
+│   │   ├── metrics.py                  # Descriptive statistics service
+│   │   └── drift/                      # Backward-compatible drift detector facades
+│   │
+│   ├── drift/                          # Dedicated multi-dimensional drift engine
+│   │   ├── __init__.py
+│   │   ├── detector.py                 # Multi-dimensional drift orchestrator
+│   │   ├── statistical_tests.py        # Vectorized KS, Chi-Square, PSI tests
+│   │   ├── volume.py                   # Volume surge / drop drift detector
+│   │   ├── null_rate.py                # Column null-rate shift detector
+│   │   ├── distribution.py             # Continuous & categorical distribution drift
+│   │   ├── freshness.py                # Freshness latency drift detector
+│   │   └── schema.py                   # Structural schema drift detector
 │   │
 │   ├── alerts/
 │   │   ├── __init__.py
-│   │   └── alert_engine.py             # Explainable anomaly alerting engine
+│   │   ├── alert_engine.py             # Explainable anomaly alerting engine
+│   │   ├── engine.py                   # AlertEngine facade
+│   │   └── severity.py                 # Severity scoring rules
 │   │
 │   ├── reporting/
 │   │   ├── __init__.py
 │   │   ├── reconciliation.py           # Terminal conservation accounting
-│   │   └── report_generator.py         # Markdown, JSON & CSV report generators
+│   │   ├── report_generator.py         # Markdown, JSON & CSV report generators
+│   │   └── export.py                   # Export utility helpers
 │   │
 │   └── models/
 │       ├── __init__.py
-│       ├── database_models.py          # 10 relational SQLAlchemy database tables
+│       ├── database_models.py          # Relational SQLAlchemy tables facade
 │       └── enums.py                    # Domain enums (EventType, RecordStatus, etc.)
+│
+├── dashboard/                          # Interactive visual observability web app
+│   └── app.py                          # HTML5/Bootstrap real-time monitoring dashboard
 │
 ├── data/
 │   ├── input/                          # Ingested and uploaded CSV files
@@ -152,8 +201,10 @@ YottaFlex_Data_Engineering_Challenge/
 │
 ├── scripts/
 │   ├── generate_data.py                # Synthetic dataset generator with edge cases
-│   ├── initialize_db.py                # Database initialization & baseline seed
-│   └── benchmark.py                    # Multi-tier performance benchmark (1k, 10k, 100k)
+│   ├── init_db.py                      # Database initialization & baseline seed
+│   ├── run_pipeline.py                 # Command-line batch ingestion runner
+│   ├── benchmark.py                    # Multi-tier performance benchmark (1k, 10k, 100k)
+│   └── benchmark_drift.py              # Statistical drift latency benchmark
 │
 ├── tests/
 │   ├── conftest.py                     # Ephemeral in-memory SQLite fixtures
@@ -164,15 +215,32 @@ YottaFlex_Data_Engineering_Challenge/
 │   ├── test_late_events.py             # Late arrivals & historical date targeting
 │   ├── test_metrics.py                 # Daily aggregates & recomputation
 │   ├── test_alerts.py                  # Baseline comparisons & explainable alerts
+│   ├── test_alerts_extended.py         # Multi-metric alerting scenarios
+│   ├── test_drift_detection.py         # Vectorized statistical drift detection
+│   ├── test_column_profiling.py        # Column-level profile calculations
 │   ├── test_idempotency.py             # Same-file rerun & terminal reconciliation
-│   └── test_api.py                     # REST API endpoints & route handlers
+│   ├── test_api.py                     # REST API endpoints & route handlers
+│   ├── test_reports.py                 # Report generation & exports
+│   ├── test_negative_scenarios.py      # 10 adversarial negative scenarios
+│   ├── test_validation_edge_cases.py   # Edge case payloads & boundaries
+│   ├── test_targeted_verification.py   # Failure recovery & ISO-4217 validation
+│   ├── unit/
+│   │   ├── test_core.py                # Exceptions, logging, and security injection
+│   │   ├── test_readers.py             # CSV, JSON array, and NDJSON ingestion
+│   │   ├── test_column_profilers.py    # Numeric, categorical, and datetime profilers
+│   │   ├── test_drift_freshness_schema.py # Freshness and schema drift unit tests
+│   │   └── test_repositories_services.py  # Repository & service layer tests
+│   └── e2e/
+│       └── test_dashboard.py           # Dashboard routes & dynamic rendering
 │
 ├── docs/
 │   ├── architecture.md                 # Detailed architecture documentation
 │   ├── data_dictionary.md              # Complete entity and column definitions
 │   ├── business_rules.md               # Business policies & conflict matrix
 │   ├── design_decisions.md             # Technical trade-offs & design choices
-│   └── testing_strategy.md             # 20 required test cases verification matrix
+│   ├── testing_strategy.md             # Verification test matrix
+│   ├── final_audit_report.md           # Independent compliance audit report
+│   └── audit_report_cleanup_refactor.md# Refactoring & code quality audit log
 │
 └── reports/                            # Generated audit, reconciliation & benchmark reports
 ```

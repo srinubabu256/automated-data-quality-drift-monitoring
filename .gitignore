@@ -43,6 +43,7 @@ venv.bak/
 
 # Test & Coverage
 .coverage
+coverage.xml
 htmlcov/
 .pytest_cache/
 .tox/
