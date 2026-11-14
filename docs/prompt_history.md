@@ -1,9 +1,7 @@
 # YottaFlex Hackathon — Master Prompt History & Implementation Audit Log
 
 **Project Name:** Automated Data Quality Profiling & Drift Monitoring Platform  
-**GitHub Repository:** [`srinubabu256/automated-data-quality-drift-monitoring`](https://github.com/srinubabu256/automated-data-quality-drift-monitoring)  
-**Candidate Workspace:** `C:\CandidateWorkspace\YottaFlex_Data_Engineering_Challenge`  
-**Execution Environment:** Python 3.11.9, SQLite / PostgreSQL, FastAPI, Streamlit, Plotly, SQLAlchemy 2.0+  
+
 
 ---
 

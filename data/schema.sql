@@ -239,3 +239,4 @@ CREATE TABLE IF NOT EXISTS processing_errors (
     FOREIGN KEY (run_id) REFERENCES processing_runs (run_id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS ix_processing_errors_run_id ON processing_errors (run_id);
+
