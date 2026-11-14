@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database.models import ProcessingRun, RejectedRecord
 from app.database.repositories.batch_repository import BatchRepository
-from app.ingestion.pipeline import IngestionPipeline, PipelineExecutionResult
+from app.processing.transaction_processor import TransactionProcessor, ProcessingResult
 
 
 class BatchService:
@@ -16,9 +16,9 @@ class BatchService:
         file_path: Path,
         db: Session,
         allow_rerun: bool = False,
-    ) -> PipelineExecutionResult:
-        pipeline = IngestionPipeline(db=db)
-        return pipeline.run(file_path=file_path, allow_rerun=allow_rerun)
+    ) -> ProcessingResult:
+        processor = TransactionProcessor(db=db)
+        return processor.process_file(file_path=file_path, allow_rerun=allow_rerun)
 
     @staticmethod
     def get_run(db: Session, run_id: str) -> Optional[ProcessingRun]:
