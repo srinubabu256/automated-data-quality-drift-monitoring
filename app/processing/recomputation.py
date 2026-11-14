@@ -1,5 +1,5 @@
 """Historical Metric Recomputation Engine for updating daily business aggregates."""
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 from decimal import Decimal
 from typing import Iterable, List, Optional, Set
 from sqlalchemy import func, distinct, case
@@ -30,6 +30,9 @@ class RecomputationEngine:
         now = datetime.now(timezone.utc)
 
         for target_date in sorted(set(affected_dates)):
+            start_dt = datetime.combine(target_date, datetime.min.time())
+            end_dt = datetime.combine(target_date + timedelta(days=1), datetime.min.time())
+
             # 1. Active transaction aggregates for target date
             active_tx_query = db.query(
                 func.count(Transaction.transaction_id).label("total_tx"),
@@ -40,7 +43,8 @@ class RecomputationEngine:
                 func.coalesce(func.min(Transaction.current_amount), 0).label("min_amt"),
                 func.coalesce(func.max(Transaction.current_amount), 0).label("max_amt"),
             ).filter(
-                func.date(Transaction.first_event_timestamp) == target_date,
+                Transaction.first_event_timestamp >= start_dt,
+                Transaction.first_event_timestamp < end_dt,
                 Transaction.is_reversed == False,
                 Transaction.current_amount > 0
             ).first()
@@ -60,7 +64,8 @@ class RecomputationEngine:
                 func.max(RawEvent.event_timestamp).label("max_event_ts"),
                 func.max(RawEvent.ingestion_timestamp).label("max_ingest_ts"),
             ).filter(
-                func.date(RawEvent.event_timestamp) == target_date
+                RawEvent.event_timestamp >= start_dt,
+                RawEvent.event_timestamp < end_dt
             ).first()
 
             record_volume = raw_stats.total_raw or 0
@@ -70,7 +75,8 @@ class RecomputationEngine:
 
             # 3. Rejected records count for target date
             rejected_count = db.query(func.count(RejectedRecord.id)).filter(
-                func.date(RejectedRecord.rejected_at) == target_date
+                RejectedRecord.rejected_at >= start_dt,
+                RejectedRecord.rejected_at < end_dt
             ).scalar() or 0
 
             # 4. Null rate & Freshness calculations

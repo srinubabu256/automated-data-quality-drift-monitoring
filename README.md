@@ -515,3 +515,4 @@ Formula: Input Rows (1000) = Accepted (766) + Rejected (210) + Duplicates (24)
 - [x] Multi-tier performance benchmarks executed (1k, 10k, 100k)
 - [x] All 22 README sections completed with PowerShell commands
 - [x] No secrets, passwords, or temporary credentials committed
+
