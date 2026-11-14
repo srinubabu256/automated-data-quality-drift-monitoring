@@ -57,8 +57,8 @@ def test_schema_whitespace_only_field():
 
 
 def test_schema_currency_code_boundary():
-    """Verify currency code must be exactly 3 uppercase letters."""
-    invalid_currencies = ["US", "USDD", "usd", "123", "$$$", ""]
+    """Verify currency code must be exactly 3 uppercase letters and in ISO 4217 allowlist."""
+    invalid_currencies = ["US", "USDD", "usd", "123", "$$$", "", "ZZZ"]
     for curr in invalid_currencies:
         row = {
             "event_id": "evt_curr_1",
@@ -72,7 +72,7 @@ def test_schema_currency_code_boundary():
         }
         is_valid, reason, code, _ = SchemaValidator.validate_record(row)
         assert is_valid is False
-        assert code in ["INVALID_CURRENCY", "MISSING_REQUIRED_FIELD"]
+        assert code in ["INVALID_CURRENCY", "MISSING_REQUIRED_FIELD", "UNSUPPORTED_CURRENCY"]
 
 
 def test_business_validator_special_characters():

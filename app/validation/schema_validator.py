@@ -23,6 +23,10 @@ class SchemaValidator:
 
     VALID_EVENT_TYPES = {EventType.NEW.value, EventType.UPDATE.value, EventType.REVERSAL.value}
 
+    SUPPORTED_CURRENCIES = {
+        "USD", "EUR", "GBP", "CAD", "AUD", "JPY", "INR", "CHF", "CNY", "SGD", "NZD", "HKD", "SEK"
+    }
+
     @classmethod
     def validate_record(cls, row: Dict[str, Any]) -> Tuple[bool, Optional[str], Optional[str], Optional[Dict[str, Any]]]:
         """
@@ -44,7 +48,7 @@ class SchemaValidator:
         event_type = str(row["event_type"]).strip().upper()
         amount_raw = str(row["amount"]).strip()
         
-        # Currency check: default to USD if omitted, but if present must be 3 uppercase letters
+        # Currency check: default to USD if omitted, but if present must be in ISO 4217 allowlist
         if "currency" in row:
             curr_val = row["currency"]
             if curr_val is None or str(curr_val).strip() == "":
@@ -52,6 +56,8 @@ class SchemaValidator:
             currency = str(curr_val).strip()
             if not re.match(r"^[A-Z]{3}$", currency):
                 return False, f"Invalid currency code '{currency}'. Must be 3 uppercase letters.", "INVALID_CURRENCY", None
+            if currency not in cls.SUPPORTED_CURRENCIES:
+                return False, f"Unsupported currency code '{currency}'. Must be one of: {sorted(cls.SUPPORTED_CURRENCIES)}", "UNSUPPORTED_CURRENCY", None
         else:
             currency = "USD"
         

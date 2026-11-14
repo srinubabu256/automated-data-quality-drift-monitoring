@@ -81,3 +81,4 @@ def test_column_profiler_baseline_comparison():
     evt_comp = comparison["column_comparisons"]["event_type"]
     assert evt_comp["categorical_distribution_shift"]["NEW"] == -1
     assert evt_comp["categorical_distribution_shift"]["UPDATE"] == 2
+

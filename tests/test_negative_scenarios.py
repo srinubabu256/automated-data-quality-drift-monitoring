@@ -190,3 +190,4 @@ def test_scenario_10_rerunning_same_input(test_db, tmp_path):
 
     tx_count = test_db.query(Transaction).filter_by(transaction_id="TXN_SCEN10_1").count()
     assert tx_count == 1
+

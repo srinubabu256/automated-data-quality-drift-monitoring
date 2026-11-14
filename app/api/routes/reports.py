@@ -38,16 +38,18 @@ def get_reconciliation_report(
 
 @router.get("/rejected-records", response_model=List[RejectedRecordResponse])
 def get_rejected_records(
-    run_id: Optional[str] = Query(None, description="Filter by Run ID"),
-    limit: int = Query(50, ge=1, le=200),
-    offset: int = Query(0, ge=0),
+    run_id: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
     db: Session = Depends(get_db)
 ):
     """Retrieve quarantined invalid records with rejection reasons and line numbers."""
+    limit_val = limit if isinstance(limit, int) else 50
+    offset_val = offset if isinstance(offset, int) else 0
     return QuarantineManager.get_rejected_records(
         db=db,
         run_id=run_id,
-        limit=limit,
-        offset=offset
+        limit=limit_val,
+        offset=offset_val
     )
 
