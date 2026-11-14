@@ -1,12 +1,14 @@
-# YottaFlex AI – Data Engineering Solution
-## Robust Incremental Transaction Ingestion, Metric Recomputation & Observability Platform
+# Automated Data Quality Profiling & Drift Monitoring Platform
+## GitHub Repository: `automated-data-quality-drift-monitoring`
+### YottaFlex AI – Data Forward Deployed Engineer Hackathon Solution
 
 ![Python 3.11](https://img.shields.io/badge/Python-3.11%2B-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.30%2B-FF4B4B.svg)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0%2B-red.svg)
-![Tests](https://img.shields.io/badge/Tests-108%20Passed%20(100%25)-brightgreen.svg)
+![Tests](https://img.shields.io/badge/Tests-109%20Passed%20(100%25)-brightgreen.svg)
 ![Coverage](https://img.shields.io/badge/Coverage-85%25-brightgreen.svg)
-![License](https://img.shields.io/badge/License-Proprietary-lightgrey.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 ---
 
@@ -683,8 +685,11 @@ Formula: Input Rows (1000) = Accepted (766) + Rejected (210) + Duplicates (24)
 - [x] Late-arriving events trigger targeted historical recomputation
 - [x] Explainable baseline profiling and anomaly alerting
 - [x] Terminal reconciliation verified ($N_{input} = N_{accepted} + N_{rejected} + N_{duplicate}$)
+- [x] Streamlit & Plotly interactive dashboard at `dashboard/streamlit_app.py`
 - [x] FastAPI REST API with Swagger documentation at `/docs`
-- [x] 27 automated tests passing (100% pass rate)
+- [x] 109 automated tests passing (100% pass rate) with 85% statement coverage
+- [x] Multi-dimensional drift monitoring: Volume, Null-rate, Continuous PSI, Categorical Chi-Square, KS-Test, Freshness, Schema
+- [x] Comprehensive architectural limitations at `docs/limitations.md`
 - [x] Multi-tier performance benchmarks executed (1k, 10k, 100k)
 - [x] All 22 README sections completed with PowerShell commands
 - [x] No secrets, passwords, or temporary credentials committed

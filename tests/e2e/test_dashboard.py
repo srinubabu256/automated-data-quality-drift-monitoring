@@ -90,3 +90,29 @@ def test_dashboard_renders_with_seeded_data(test_db):
     assert "VOLUME" in html
     assert "-95.00%" in html
     assert "490" in html
+
+
+def test_streamlit_dashboard_syntax_and_structure():
+    """Verify Streamlit dashboard file exists, compiles cleanly, and includes all required views."""
+    import py_compile
+    from pathlib import Path
+    st_path = Path("dashboard/streamlit_app.py")
+    assert st_path.exists(), "dashboard/streamlit_app.py must exist"
+
+    # Verify python compilation
+    compiled = py_compile.compile(str(st_path), doraise=True)
+    assert compiled is not None
+
+    content = st_path.read_text(encoding="utf-8")
+    required_views = [
+        "Overview",
+        "Data Upload",
+        "Data Profiling",
+        "Baseline Management",
+        "Drift Monitoring",
+        "Alert Center",
+        "Batch Monitoring",
+        "Reconciliation",
+    ]
+    for view in required_views:
+        assert view in content, f"Missing required view: {view}"
