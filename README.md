@@ -20,6 +20,84 @@ The system is architected for **zero data loss**, **idempotent retries**, **dete
 
 ---
 
+## 🚀 Quickstart: How to Run the Project (Step-by-Step)
+
+Follow these clear, copy-pasteable commands in **Windows PowerShell** to run the complete platform:
+
+### Step 1: Clone Repository & Virtual Environment Setup
+```powershell
+# Clone the repository
+git clone https://github.com/srinubabu256/automated-data-quality-drift-monitoring.git
+cd automated-data-quality-drift-monitoring
+
+# Create and activate Python virtual environment
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+# Upgrade pip and install all pinned dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### Step 2: Initialize Database & Seed Baseline Profile
+Creates all 11 database tables, sets indexes, and seeds the production reference baseline profile (`v1.0`):
+```powershell
+python scripts/initialize_db.py
+```
+*Expected Output:* `Database initialization completed successfully.`
+
+### Step 3: Run the Ingestion Pipeline via CLI
+Executes end-to-end ingestion, schema validation, transaction lifecycle (NEW/UPDATE/REVERSAL), historical metric recomputation, and terminal reconciliation on sample data:
+```powershell
+# Run 1,000 records
+python scripts/run_pipeline.py --file data/sample/transactions_1k.csv
+
+# Run 10,000 records
+python scripts/run_pipeline.py --file data/sample/transactions_10k.csv
+
+# Force re-running a previously processed file (idempotency override)
+python scripts/run_pipeline.py --file data/sample/transactions_1k.csv --allow-rerun
+```
+
+### Step 4: Start the FastAPI Backend & Swagger API Docs
+Starts the local REST API server:
+```powershell
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+Open your browser to:
+- **Interactive Swagger API Docs**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **System Health Check**: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
+- **Embedded HTML5 Dashboard**: [http://127.0.0.1:8000/dashboard/](http://127.0.0.1:8000/dashboard/)
+
+### Step 5: Launch the Streamlit Interactive Dashboard
+In a separate terminal window, launch the interactive visual frontend with Plotly charts:
+```powershell
+streamlit run dashboard/streamlit_app.py
+```
+Open your browser to:
+- **Streamlit Dashboard URL**: [http://127.0.0.1:8501](http://127.0.0.1:8501)
+- *Includes 8 interactive views:* 📈 Overview, 📤 Data Upload, 🔍 Data Profiling, 🎯 Baseline Management, ⚡ Drift Monitoring, 🚨 Alert Center, 📋 Batch Monitoring, ⚖️ Reconciliation.
+
+### Step 6: Run Automated Tests
+```powershell
+# Run the entire test suite (109 tests passing)
+pytest tests/ -v
+
+# Run with test coverage analysis (85% statement coverage)
+pytest --cov=app --cov-report=term
+```
+
+### Step 7: Run Performance & Drift Latency Benchmarks
+```powershell
+# Ingestion pipeline scale benchmark across 1k, 10k, and 100k tiers
+python scripts/benchmark.py --tiers 1000 10000 100000
+
+# Statistical drift latency benchmark (Volume, Null-rate, PSI, KS-test, Chi-Square)
+python scripts/benchmark_drift.py
+```
+
+---
+
 ## 2. Business Problem
 
 Modern transactional pipelines frequently encounter severe data quality and event-ordering challenges:
@@ -370,35 +448,37 @@ Generated sample files in `data/sample/`:
 
 ## 14. Pipeline Execution via CLI
 
-Process any batch CSV directly using Python:
+Process any transaction CSV or JSON file directly from the command line:
 
 ```powershell
-python -c "
-from pathlib import Path
-from app.database import SessionLocal
-from app.processing.transaction_processor import TransactionProcessor
+# Run on 1k sample transactions
+python scripts/run_pipeline.py --file data/sample/transactions_1k.csv
 
-db = SessionLocal()
-processor = TransactionProcessor(db=db)
-result = processor.process_file(Path('data/sample/transactions_1k.csv'))
-print('Execution Result:', result.to_dict())
-db.close()
-"
+# Run on 10k sample transactions
+python scripts/run_pipeline.py --file data/sample/transactions_10k.csv
+
+# Override idempotency check to re-run an already processed file
+python scripts/run_pipeline.py --file data/sample/transactions_1k.csv --allow-rerun
 ```
 
 ---
 
-## 15. API Startup
+## 15. API & Dashboard Startup
 
-Start the FastAPI application with Uvicorn:
-
+### Start the FastAPI REST API:
 ```powershell
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-
 - **Swagger Interactive Documentation**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 - **ReDoc Documentation**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 - **System Health Check**: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
+- **Embedded HTML5 Dashboard**: [http://127.0.0.1:8000/dashboard/](http://127.0.0.1:8000/dashboard/)
+
+### Start the Streamlit & Plotly Dashboard:
+```powershell
+streamlit run dashboard/streamlit_app.py
+```
+- **Streamlit Interactive UI**: [http://127.0.0.1:8501](http://127.0.0.1:8501)
 
 ---
 
